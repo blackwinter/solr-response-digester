@@ -11,8 +11,8 @@ jrake DIR=path/to/lucene-solr
 ```xml
 <config>
   [...]
-  <lib path="${solr.install.dir:../../../..}/de.fh_koeln.ixtrieve.aiw.jar" />
-  <queryResponseWriter name="xml" class="de.fh_koeln.ixtrieve.aiw.XMLResponseWriter">
+  <lib path="${solr.install.dir:../../../..}/de.fh_koeln.ixtrieve.srd.jar" />
+  <queryResponseWriter name="xml" class="de.fh_koeln.ixtrieve.srd.XMLResponseWriter">
     <str name="key">KEY</str>
   </queryResponseWriter>
 </config>
@@ -23,10 +23,10 @@ jrake DIR=path/to/lucene-solr
 ```xml
 <lst name="responseHeader">
   [...]
-  <lst name="aiw">
+  <lst name="srd">
     <str name="key">KEY</str>
-    <str name="value">1466780880672</str>
-    <str name="digest">76b22e2dc672fbb7405a06fb7cd48612adf46e60bfa94fba790ce4ce0ffdc26a</str>
+    <str name="value">1467375800940</str>
+    <str name="digest">1c12a72548ab96c1aba506cbb0feb34652d382a39c1017b54e3125406e0bd7a5</str>
   </lst>
 </lst>
 ```

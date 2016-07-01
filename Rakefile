@@ -1,52 +1,41 @@
 require 'rake/clean'
 
-src = File.expand_path(ENV['SRC'] || 'src')
-dir = File.expand_path(File.join(ENV['DIR'] || '.', 'solr'))
+chdir('src')
 
-srz = Dir["#{src}/**/*.java"].first or abort "SRC not found!"
+solr_dir = File.expand_path(File.join(ENV['SOLR_DIR'] || '.', 'solr'))
 
-cls = File.basename(srz, File.extname(srz))
-pkg = File.read(srz)[/^package\s+(\S+)\s*;/, 1]
+src_list = FileList['**/*.java']
+cls_list = src_list.ext('class')
+main_src = src_list.grep(/ResponseDigester/).first or abort 'Source not found!'
 
-CLEAN   << jar = File.join(dir, "#{pkg}.jar")
-CLOBBER << clz = srz.sub('.java', '.class')
+pkg_name = File.read(main_src)[/^package\s+(\S+)\s*;/, 1]
+jar_file = File.join(solr_dir, "#{pkg_name}.jar")
+
+CLEAN.add(jar_file)
+CLOBBER.add(cls_list)
 
 task default: :build
 
-desc "Compile #{srz}"
-task compile: clz
+desc 'Compile source files'
+task compile: cls_list
 
-desc "Build #{jar}"
-task build: jar do
-  puts <<-EOT
-#{sep = '*' * 72}
-#{dir}/example/techproducts/solr/techproducts/conf/solrconfig.xml:
+desc "Build #{jar_file}"
+task build: jar_file
 
-<config>
-  [...]
-  <lib path="${solr.install.dir:../../../..}/#{File.basename(jar)}" />
-  <queryResponseWriter name="xml" class="#{pkg}.#{cls}">
-    <str name="key">KEY</str>
-  </queryResponseWriter>
-</config>
-#{sep}
-  EOT
+file jar_file => cls_list do
+  sh 'jar', 'cvf', jar_file, *cls_list
 end
 
-file jar => clz do
-  chdir(src) { sh 'jar', 'cvf', jar, clz.sub(src + '/', '') }
-end
+rule '.class' => '.java' do |t|
+  ver = ENV['JAVA_VER'] || ENV_JAVA['java.specification.version']
 
-file clz => srz do
-  ver = ENV['VER'] || ENV_JAVA['java.specification.version']
-
-  jars = {
+  cp = {
     'lucene-libs' => 'lucene-core',
     'solr-core'   => 'solr-core',
     'solr-solrj'  => 'solr-solrj'
   }.map { |key, val|
-    glob = "#{dir}/build/#{key}/#{val}-*-SNAPSHOT.jar"
-    Dir[glob].first or abort "JAR not found: #{glob}" }.join(':')
+    glob = "#{solr_dir}/build/#{key}/#{val}-*-SNAPSHOT.jar"
+    Dir[glob].first or abort "JAR not found: #{glob}" }.push('.')
 
-  sh 'javac', '-source', ver, '-target', ver, '-cp', jars, srz
+  sh 'javac', '-source', ver, '-target', ver, '-cp', cp.join(':'), t.source
 end
