@@ -13,34 +13,34 @@ import org.apache.solr.response.SolrQueryResponse;
 
 public class ResponseDigester {
 
-  private final String ALGORITHM = "SHA-256";
+  private static final String ALGORITHM = "SHA-256";
 
-  private final byte[] SEPARATOR = ":".getBytes();
+  private static final byte[] SEPARATOR = ":".getBytes();
 
   private MessageDigest digest = null;
 
   private String name = "srd";
 
-  private String key = null;
+  private final String key;
 
-  ResponseDigester(String n, String k) {
-    this(k);
-    name = n;
+  ResponseDigester(final String name, final String key) {
+    this(key);
+    this.name = name;
   }
 
-  ResponseDigester(String k) {
-    key = k;
+  ResponseDigester(final String key) {
+    this.key = key;
 
     try {
-      digest = MessageDigest.getInstance(ALGORITHM);
+      this.digest = MessageDigest.getInstance(ALGORITHM);
     } catch(NoSuchAlgorithmException e) {}
   }
 
-  public SolrQueryResponse digest(QueryResponseWriter writer, SolrQueryRequest req, SolrQueryResponse rsp) {
+  public SolrQueryResponse digest(final QueryResponseWriter writer, final SolrQueryRequest req, final SolrQueryResponse rsp) {
     if (key != null) {
-      String value = Long.toString(System.currentTimeMillis());
+      final String value = Long.toString(System.currentTimeMillis());
 
-      ArrayList<String> array = new ArrayList<>();
+      final ArrayList<String> array = new ArrayList<>();
       array.add(name);
       array.add(key);
       array.add(value);
@@ -48,7 +48,7 @@ public class ResponseDigester {
       array.add(Integer.toString(
           ((BasicResultContext)rsp.getResponse()).getDocList().matches()));
 
-      NamedList<String> list = new NamedList<>();
+      final NamedList<String> list = new NamedList<>();
       list.add("key", key);
       list.add("value", value);
       list.add("digest", digest(array));
@@ -59,14 +59,14 @@ public class ResponseDigester {
     return rsp;
   }
 
-  public String digest(ArrayList<String> array) {
+  public String digest(final ArrayList<String> array) {
     if (digest == null) {
       return "";
     }
 
     digest.reset();
 
-    for (String item : array) {
+    for (final String item : array) {
       digest.update(item.getBytes());
       digest.update(SEPARATOR);
     }

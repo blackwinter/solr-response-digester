@@ -13,13 +13,13 @@ public class XMLResponseWriter extends org.apache.solr.response.XMLResponseWrite
   private ResponseDigester rd = null;
 
   @Override
-  public void init(NamedList n) {
+  public void init(final NamedList n) {
     final SolrParams p = SolrParams.toSolrParams(n);
     rd = new ResponseDigester(p.get("key"));
   }
 
   @Override
-  public void write(Writer writer, SolrQueryRequest req, SolrQueryResponse rsp) throws IOException {
+  public void write(final Writer writer, final SolrQueryRequest req, final SolrQueryResponse rsp) throws IOException {
     super.write(writer, req, rd.digest(this, req, rsp));
   }
 
